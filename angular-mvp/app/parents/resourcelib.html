@@ -1,0 +1,25 @@
+<div class="container">
+    <div class="alert alert-danger check-element animate-show" ng-show="showError" class="ng-hide">
+        这是一个警告框
+    </div>
+    <br>
+
+    <div align="right">
+        <a href="#/courseware" class="btn btn-danger">进入课件页面</a>
+    </div>
+    <br>
+
+    <div class="row" ng-repeat-start="row in rows track by $index">
+        <div class="col-sm-6 col-md-4" ng-repeat="column in columns track by $index" >
+            <div class="thumbnail">
+                <img data-src="" alt="">
+
+                <div class="caption">
+                    <h3>(空白)</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br ng-repeat-end>
+
+</div>
