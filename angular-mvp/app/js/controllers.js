@@ -52,3 +52,13 @@ var resLibCtrl = function($scope, $log,cards){
     $scope.cards = cards;
 }
 
+var childCtrl = function($scope,surface_example,cards){
+    $scope.layout = surface_example.layout;
+    $scope.column_num = parseInt(surface_example.layout.substring(0,1)); //布局的 列数
+    $scope.row_num = parseInt(surface_example.layout.substring(1,2));    //布局的 行数
+    $scope.columns =initData(new Array($scope.column_num));
+    $scope.rows =initData(new Array($scope.row_num));
+    $scope.classLine= 12/$scope.column_num;                              //布局行的样式
+    $scope.cards = cards;
+}
+

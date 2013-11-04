@@ -14,5 +14,6 @@ config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/courseware', {templateUrl: 'parents/index.html', controller: 'CourseCtrl'});
   $routeProvider.when('/newcard', {templateUrl: 'parents/newcard.html', controller: 'NewCardCtrl'});
   $routeProvider.when('/reslib', {templateUrl: 'parents/resourcelib.html', controller: 'resLibCtrl'});
+  $routeProvider.when('/child', {templateUrl: 'child/index.html', controller: 'childCtrl'});
   $routeProvider.otherwise({redirectTo: '/courseware'});
 }]);
