@@ -54,7 +54,6 @@ var getResource = function(resource_ids,resource){
             }
         }
     }
-
     return results;
 }
 
@@ -87,20 +86,32 @@ var initData = function(datas){
 }
 
 var NewCardCtrl = function($scope, $log) {
-    document.title = "新建卡片"
+    document.title = "新建卡片";
     $scope.$log = $log;
     $scope.message = 'Hello World!';
 }
 
 var resLibCtrl = function($scope, $log,resource){
     document.title = "素材库";
-    $scope.cards = resource;
+    $scope.surfaces =findCatalog(resource);
+}
+/**
+ * 找出分类节点
+ */
+var findCatalog = function(resource){
+    var results =[];
+    var i=0;
+    for(;i<resource.length;i++){
+        if(resource[i].type == "catalog"){
+            results.push(resource[i]);
+        }
+    }
+    return results;
 }
 
 var couseLibCtrl = function($scope,surface_example){
     document.title = "课件库";
     //此处应该注入所有课件的 数据模型
     //当前注入surface_example一个数据模型
-    $scope.columns = initData(new Array(surface_example.length));  //只有一个所以为1
     $scope.courses = surface_example;
 }
