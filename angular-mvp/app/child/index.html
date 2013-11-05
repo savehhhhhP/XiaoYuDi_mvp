@@ -1,9 +1,7 @@
 <div class="container">
-    <div class="alert alert-danger check-element animate-show" ng-show="showError" class="ng-hide">
-        这是一个警告框
-    </div>
     <br>
-
+    <button class="btn btn-primary btn-lg btn-block" disabled="disabled">{{courseName}}</button>
+    <br>
     <div class="row" ng-repeat-start="row in rows track by $index">
         <div class="col-sm-6 col-md-{{classLine}}" ng-repeat="column in columns track by $index" draggable>
             <div class="thumbnail">
