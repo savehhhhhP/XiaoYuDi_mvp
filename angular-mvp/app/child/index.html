@@ -1,18 +1,13 @@
-<div class="container">
-    <br>
-    <button class="btn btn-primary btn-lg btn-block" disabled="disabled">{{courseName}}</button>
-    <br>
-    <div class="row" ng-repeat-start="row in rows track by $index">
-        <div class="col-sm-6 col-md-{{classLine}}" ng-repeat="column in columns track by $index" draggable>
-            <div class="thumbnail">
-                <img ng-src="{{cards[row*column_num+column].imageUrl}}" ng-alt="{{cards[row*column_num+column].name}}">
-                <div class="caption">
-                    <h3>{{cards[row*column_num+column].name || "(空白)"}}</h3>
-                    <a href="#" class="btn btn-primary"
-                       role="button">替换</a>
-                </div>
+<br>
+<button class="btn btn-primary btn-lg btn-block" disabled="disabled">{{courseName}}</button>
+<br>
+<div class="row">
+    <div class="col-sm-6 col-md-{{classLine}}" ng-repeat="surface in surfaces track by $index">
+        <div class="thumbnail">
+            <img ng-src="{{surface.imageUrl}}" ng-alt="{{surface.name}}">
+            <div class="caption">
+                <h3 class="text-center">{{surface.name || "(空白)"}}</h3>
             </div>
         </div>
     </div>
-    <br ng-repeat-end>
 </div>
