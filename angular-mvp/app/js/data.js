@@ -2,10 +2,35 @@
  * Created by Administrator on 13-10-29.
  */
 
-angular.module("myApp.data", [])
-    .factory("surface_example",function () {
-    return [
-        {                                           //课件库
+angular.module("myApp.data", ['ngResource'])
+    .factory("user",
+        ['$resource', function ($resource) {
+            return $resource('user.json', {}, {
+                query: {method: 'GET', isArray: true}
+            });
+        }])
+    .factory("resources",
+        ['$resource', function ($resource) {
+            return $resource('resources.json', {}, {
+                query: {method: 'GET', isArray: true}
+            });
+        }])
+    .factory("card",
+        ['$resource', function ($resource) {
+            return $resource('card.json', {}, {
+                query: {method: 'GET', isArray: true}
+            });
+        }])
+    .factory("card_tree",
+        ['$resource', function ($resource) {
+            return $resource('card_tree.json', {}, {
+                query: {method: 'GET', isArray: true}
+            });
+        }])
+
+    .factory("surface_example", function () {
+        return [
+            {                                           //课件库
             uuid: "F6218FB2-42A4-4F07-909E-681318A512BA",    //课件标识
             layout: "34",                                    //布局样式
             name: "食品",                                     //课件名称

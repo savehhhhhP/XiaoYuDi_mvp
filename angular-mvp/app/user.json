@@ -1,0 +1,23 @@
+[
+    {
+        "user": "u1",
+        "name": "阶段一",
+        "root_category": "cat1",
+        "layoutx": 3,
+        "layouty": 4
+    },
+    {
+        "user": "u2",
+        "name": "阶段二",
+        "root_category": "cat2",
+        "layoutx": 3,
+        "layouty": 4
+    },
+    {
+        "user": "u3",
+        "name": "阶段三",
+        "root_category": "cat3",
+        "layoutx": 3,
+        "layouty": 4
+    }
+]

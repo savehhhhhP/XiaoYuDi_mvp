@@ -18,8 +18,4 @@ config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/child', {templateUrl: 'child/index.html', controller: 'childCtrl'});
   $routeProvider.when('/couselib', {templateUrl: 'parents/coursewarelib.html', controller: 'couseLibCtrl'});
   $routeProvider.otherwise({redirectTo: '/courseware'});
-}]).run(['$rootScope','$http',function($rootScope,$http){
-        $rootScope.global = {};
-        myApp.rootScope = $rootScope;
-        myApp.http = $http;
-    }]);;
+}])
