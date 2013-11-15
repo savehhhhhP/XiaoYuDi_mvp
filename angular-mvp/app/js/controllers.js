@@ -8,95 +8,164 @@
 
 var xiaoyudiControllers = angular.module('myApp.controllers', []);
 
-xiaoyudiControllers.controller('childCtrl', ['$scope', 'surface_example', 'resource', 'cardtree','synManifest',
-    function ($scope, surface_example, resource, cardtree,synManifest) {
+xiaoyudiControllers
+/**
+ * Controller
+ * 孩子页
+ */
+    .controller('childCtrl', ['$scope', 'card_tree','synManifest','card','serverCookie','resources','user',
+    function ($scope,card_tree,synManifest,card,serverCookie,resources,user) {
+        removeClass();
         document.title = "孩子页面";
-        $scope.layout = surface_example[0].layout;
-        $scope.column_num = parseInt(surface_example[0].layout.substring(0, 1)); //布局的 列数
-        $scope.row_num = parseInt(surface_example[0].layout.substring(1, 2));    //布局的 行数
-        $scope.classLine = 12 / $scope.column_num;                              //布局行的样式
-
-        var surface_id = getSurface(surface_example[0].uuid, cardtree);           //取得一个页面里的孩子id
-        $scope.surfaces = getResource(surface_id, resource);                      //取得孩子id对应的卡片
-        $scope.courseName = surface_example[0].name;                            //课件名称
-
-        $scope.test = synManifest.query(function(response){
-            console.log(response);
-        },
-        function(error){
-            console.log("error");
-        });
-    }])
-
-    .controller('CourseCtrl',
-              ['$scope', '$log','synFile','synManifest','user','resources','card','card_tree',
-    function ($scope, $log,synFile,synManifest,user,resources,card,card_tree) {
-        document.title = "课件"
         //用户ID 设为u1 默认载入课件：《阶段一》
-        var userName = "u1";
+        var userName = serverCookie.getConfigCourse(null);
         //取得所有 课件(user.json)信息
         $scope.users = user.query(function(response){
-            // Setting a cookie
-            //$cookies.myUsers = response;
+            console.log(response);
             //取得默认课件的root category 分类
+            response.forEach(function(ite){
+                ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
+            });
             var rootSurface = findRootCategory(response,userName);   //u1: cat1
             var root_category = rootSurface.root_category;
             $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
-            $scope.courseName = rootSurface.name;
-
+            $scope.courseName = rootSurface.name;           //标题
+            $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
+            //取得root category 分类下面的 元素（卡片或者分类）
+            getChild(root_category,card_tree,card,$scope,userName);
+        });
+        //取得所有 资源的文件名
+        $scope.resources = resources.query();
+    }])
+/**
+ * Controller
+ * 课件编辑页
+ */
+    .controller('CourseCtrl',
+              ['$scope','synFile','synManifest','user','resources','card','card_tree','serverCookie',
+    function ($scope,synFile,synManifest,user,resources,card,card_tree,serverCookie) {
+        removeClass();
+        document.title = "课件";
+        //用户ID 设为u1 默认载入课件：《阶段一》
+        var userName = serverCookie.getConfigCourse(null);
+        console.log(userName);
+        //取得所有 课件(user.json)信息
+        $scope.users = user.query(function(response){
+            console.log(response);
+            //取得默认课件的root category 分类
+            response.forEach(function(ite){
+                ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
+            });
+            var rootSurface = findRootCategory(response,userName);   //u1: cat1
+            var root_category = rootSurface.root_category;
+            $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
+            $scope.courseName = rootSurface.name;           //标题
+            $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
             //取得root category 分类下面的 元素（卡片或者分类）
             getChild(root_category,card_tree,card,$scope,userName);
         });
         //取得所有 资源的文件名
         $scope.resources = resources.query();
         $scope.changeLayout = function () {
-            //记录修改的布局
-            surface_example[0].layout = $scope.layout;
-            $scope.column_num = parseInt($scope.layout.substring(0, 1));         //布局的 列数
-            $scope.row_num = parseInt($scope.layout.substring(1, 2));            //布局的 行数
+            //记录修改的布局                                                          数据库操作处打标记    db
+            $scope.column_num = parseInt($scope.layout.substring(0, 1));              //布局的 列数
             $scope.classLine = 12 / $scope.column_num;
         }
-        /*
-
-        $scope.layout = surface_example[0].layout;
-        $scope.column_num = parseInt(surface_example[0].layout.substring(0, 1)); //布局的 列数
-        $scope.row_num = parseInt(surface_example[0].layout.substring(1, 2));    //布局的 行数
-
-        $scope.classLine = 12 / $scope.column_num;                              //布局行的样式
-
-        var surface_id = getSurface(surface_example[0].uuid, cardtree);           //取得一个页面里的孩子id
-        $scope.surfaces = getResource(surface_id, resource);                      //取得孩子id对应的卡片
-        $scope.courseName = surface_example[0].name;                            //课件名称
-        $scope.changeLayout = function () {
-            //记录修改的布局
-            surface_example[0].layout = $scope.layout;
-            $scope.column_num = parseInt($scope.layout.substring(0, 1));         //布局的 列数
-            $scope.row_num = parseInt($scope.layout.substring(1, 2));            //布局的 行数
-            $scope.classLine = 12 / $scope.column_num;
+        $scope.changeCourse = function(name){
+            serverCookie.getConfigCourse(name);//改变此时cookie
+            console.log(name);
         }
-        */
+        $scope.switch = function(){
+            $scope.changeCourseName=($scope.changeCourseName)?false:true;
+        }
+        $scope.btnCreatCourseWare = function(){//功能未完成
+            //创建新课件
+            var newCourseWare = {
+                    "user": "u4",
+                    "name": "默认课程名称",
+                    "root_category": "cat4",
+                    "layoutx": 3,
+                    "layouty": 4
+                };
+            $scope.users.push(newCourseWare);
+            //更改当前页
+            serverCookie.getConfigCourse(newCourseWare.user);//改变此时cookie
+            //更改数据库设置
+        }
     }])
-
-    .controller('NewCardCtrl', ['$scope', '$log',
-    function ($scope, $log) {
+/**
+ * Controller
+ * 新建卡片
+ */
+    .controller('NewCardCtrl', ['$scope', '$log','synFile',
+    function ($scope, $log,synFile) {
+        removeClass();
+        synFile.query({id:'r1'});
         document.title = "新建卡片";
-        $scope.$log = $log;
-        $scope.message = 'Hello World!';
+        $scope.addCard = function(card){
+            console.log(card);
+        }
     }])
-
-    .controller('resLibCtrl', ['$scope', '$log', 'resource',
-    function ($scope, $log, resource) {
+/**
+ * Controller
+ * 素材库
+ */
+    .controller('resLibCtrl', ['$scope', '$log', 'card',
+    function ($scope, $log, card) {
+        removeClass();
         document.title = "素材库";
-        $scope.surfaces = findCatalog(resource);
+        //取得用户所有资源
+        card.query(function (response) {
+            var Res = [];
+            Res.push(    //第一个为未分类
+                {
+                    "id": "cat0",
+                    "type": "category",
+                    "name": "未分类",
+                    "image": null,
+                    "audio": null,
+                    "user": null
+                }
+            );
+            Res.concat(response.filter(function (iteRes) {
+                if (iteRes.type == "category" && iteRes.name != "root_category") {             //迭代出为非跟目录的项
+                    return true;
+                }
+            }));
+            $scope.categorys = Res;
+        });
     }])
+/**
+ * Controller
+ * 某个分类
+ */
+    .controller('categroyCtrl', ['$scope', 'card','$routeParams',
+    function ($scope,card,$routeParams) {
+        $scope.params = $routeParams;           //取得进入的分类的id
+        document.title = "分类页面";
+        card.query(function(response){
+            $scope.cards = response.filter(function(iteRes){
+                if(iteRes.id==$routeParams.categroyId){
+                    $scope.categroy = iteRes;
+                    return false;
+                }
+                if(iteRes.name!="root_category"){
+                    return true;
+                }
+            });
+        });
 
-    .controller('couseLibCtrl', ['$scope', 'surface_example',
-    function ($scope, surface_example) {
-        document.title = "课件库";
-        //此处应该注入所有课件的 数据模型
-        //当前注入surface_example一个数据模型
-        $scope.courses = surface_example;
-    }])
+    }]);
+
+/**
+ * 去除对话框的遮罩
+ */
+var removeClass = function(){                   //此处的jquery操作需要优化 （angular不提议直接操作dom）
+    var exm = $("div:last");
+    if(exm[0].className == "modal-backdrop fade in"){
+        exm[0].remove()
+    }
+}
 
 /**
  * 取得root category 分类下面的 元素（卡片或者分类）

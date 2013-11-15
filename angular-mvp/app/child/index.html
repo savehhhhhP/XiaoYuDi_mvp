@@ -1,13 +1,18 @@
 <br>
-<button class="btn btn-primary btn-lg btn-block" disabled="disabled">{{courseName}}</button>
+<div class="header row">
+    <div class="col-xs-6 col-xs-offset-3">
+        <button class="btn-lg btn-mvp" ng-hide="changeCourseName">
+            {{courseName}}
+        </button>
+    </div>
+</div>
 <br>
-        {{test.resources[0].timestamp}}
 <div class="row">
-    <div class="col-sm-6 col-md-{{classLine}}" ng-repeat="surface in surfaces track by $index">
+    <div class="col-sm-6 col-md-{{classLine}}" ng-repeat="childResCard in childResCards track by $index">
         <div class="thumbnail">
-            <img ng-src="{{surface.imageUrl}}" ng-alt="{{surface.name}}">
+            <img ng-src="http://115.28.35.182/services/data/app/file/{{childResCard.image}}" ng-alt="{{childResCard.name}}">
             <div class="caption">
-                <h3 class="text-center">{{surface.name || "(空白)"}}</h3>
+                <h3 class="text-center">{{childResCard.name}}</h3>
             </div>
         </div>
     </div>

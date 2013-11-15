@@ -1,5 +1,13 @@
 [
     {
+        "id": "cat0",
+        "type": "category",
+        "name": "未分类",
+        "image": null,
+        "audio": null,
+        "user": null
+    },
+    {
         "id": "cat1",
         "type": "category",
         "name": "root_category",
