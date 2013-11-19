@@ -19,4 +19,4 @@ config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/couselib', {templateUrl: 'parents/coursewarelib.html', controller: 'couseLibCtrl'});
   $routeProvider.when('/categroy/:categroyId', {templateUrl: 'parents/categroy.html', controller: 'categroyCtrl'});
   $routeProvider.otherwise({redirectTo: '/courseware'});
-}])
+}]);

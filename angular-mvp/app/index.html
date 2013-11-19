@@ -18,8 +18,148 @@
 
 </head>
 <body>
-<div class="container">
-    <div ng-view></div>
+<div ng-controller="dialogCtrl" class="container">
+    <div ng-view>
+    </div>
+    <!--下面为弹出的对话框-->
+
+    <!--切换课件-->
+    <div id="coursewave" class="modal fade in" tabindex="-1" data-width="760"
+         style="display: none; width: 760px; margin-left: -379px; margin-top: -266px;" aria-hidden="true">
+        <div class="modal-header dropup">
+            <button type="button" class="close btn-lg" data-dismiss="modal" aria-hidden="true"><span
+                    class="caret"></span></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-sm-3 col-md-3" ng-repeat="user in users">
+                    <a ng-href="#coursewave" ng-click="changeCourse(user.user)"  class="thumbnail">
+                        <img ng-src="{{user.imgUrl}}" alt="{{user.name}}">
+                    </a>
+                    <h3 class="text-center">{{user.name}}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" data-dismiss="modal" ng-click="btnCreatCourseWare()"
+                    class="btn btn-default">添加新课件
+            </button>
+            <button type="button" data-dismiss="modal"
+                    class="btn btn-default">确定
+            </button>
+        </div>
+    </div>
+
+    <!--关于新建卡片或者分类的对话框-->
+
+    <!--选择图片-->
+    <div id="editImage" class="modal fade in" tabindex="-1" data-width="760" style="display: none; width: 760px; margin-left: -379px; margin-top: -266px;" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 class="modal-title text-center">图片修改</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12 text-center" >
+                    <a href="#" role="button"><img ng-src="" alt="待添加图片"></a>
+                    <input type="file" mg-model="file" />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="col-md-6">
+                <button type="button" data-dismiss="modal" class="btn btn-default btn-block">取消</button>
+            </div>
+            <div class="col-md-6">
+                <button data-toggle="modal" data-dismiss="modal" href="#editAudio" ng-click="goEditAudio()" type="button" class="btn btn-default btn-block">去录音</button>
+            </div>
+        </div>
+    </div>
+
+    <!--录音-->
+    <div id="editAudio" class="modal fade in" tabindex="-1" data-width="760" style="display: none; width: 760px; margin-left: -379px; margin-top: -266px;" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 class="modal-title text-center">编辑声音</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12 text-center" >
+                    <label>默认的卡片名称</label>
+                    <button class="btn-lg btn-mvp" ng-click="switch()">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                    </button>
+                </div>
+            </div>
+            <br>
+
+            <div class="row text-center" >
+            为卡片录一段语音吧，比如“我要吃苹果”。让孩子随时听到你的声音。
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col-md-4 text-center" >
+                    <a href="#" role="button"><img src="" alt="点击录音"></a>
+                </div>
+                <div class="col-md-4 text-center" >
+                    <a href="#" role="button"><img src="" alt="试听录音"></a>
+                </div>
+                <div class="col-md-4 text-center" >
+                    <a href="#" role="button"><img src="" alt="点击删除录音"></a>
+                </div>
+            </div>
+            <br>
+
+            <div class="row text-center" >
+            最后为卡片选择一个分类，也方便以后查找。
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    选择一个分类：
+                    <select>
+                        <option>未分类</option>
+                        <option>分类A</option>
+                        <option>分类B</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div class="col-md-6">
+                <button data-toggle="modal" data-dismiss="modal"  href="#editImage" type="button" class="btn btn-default btn-block">
+                    <span class="glyphicon glyphicon-chevron-left">编辑图片</span>
+                </button>
+            </div>
+            <div class="col-md-6">
+                <button data-dismiss="modal" ng-click="creatNewCard()" class="btn btn-default btn-block">完成</button>
+            </div>
+        </div>
+    </div>
+
+    <!--选添加卡片 还是分类-->
+    <div id="newResouse" class="modal fade in" tabindex="-1" data-width="760" style="display: none; width: 760px; margin-left: -379px; margin-top: -266px;" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 class="modal-title text-center">添加一个</h4>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-6 text-center" >
+                    <button data-toggle="modal" data-dismiss="modal" href="#editImage" role="button"><img ng-src="img/card.png" ng-lat="卡片"></button>
+                </div>
+                <div class="col-md-6 text-center">
+                    <button href="#/categroy" role="button" ><img ng-src="img/categroy.png" ng-lat="分类"></button>
+
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" data-dismiss="modal" class="btn btn-default btn-block">取消</button>
+        </div>
+    </div>
 </div>
 
   <!-- In production use:
@@ -35,5 +175,10 @@
   <script src="js/filters.js"></script>
   <script src="js/directives.js"></script>
   <script src="js/data.js"></script>
+
+<script src="js/vendor/jquery.ui.widget.js"></script>
+<script src="js/jQuery/jquery.iframe-transport.js"></script>
+<script src="js/jQuery/jquery.fileupload.js"></script>
+<script src="js/cors/jquery.xdr-transport.js"></script>
 </body>
 </html>

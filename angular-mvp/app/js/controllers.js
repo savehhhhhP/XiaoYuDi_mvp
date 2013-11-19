@@ -7,8 +7,66 @@
 //angular.module('myApp.controllers', []);
 
 var xiaoyudiControllers = angular.module('myApp.controllers', []);
+/**
+ * Controller
+ * 对话框
+ */
+xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$http','$templateCache',
+    function ($scope,user,serverCookie,$http,$templateCache) {
+        removeClass();
+        $scope.creatNewCard = function(){//提交操作
+            var card ={
+                card:"card5",
+                name:"我要唱歌",
+                image:"r9",
+                imagefile:"r9.jpg",
+                audio:"r10",
+                audiofile:"r10.mp3",
+                categroy:"cat22",
+                position:10,
+                user:"u1"
+            }
+            console.log(card);
+            $http({method: "POST", url: "http://localhost:3000/services/newcard",data:card, cache: $templateCache}).
+                success(function(msg, status, headers, config) {
+                    console.log(msg);
+                }).
+                error(function(err, status, headers, config) {
+                    alert('error: ' + err);
+                });
+        }
+        $scope.goEditAudio = function(){
+            console.log($scope.file);
+        }
+        $scope.users = user.query(function(response){
+            response.forEach(function(ite){
+                ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
+            });
+        });
+        $scope.changeCourse = function(name){
+            serverCookie.getConfigCourse(name);//改变此时cookie
 
-xiaoyudiControllers
+            $scope.$broadcast("CourseCtrlChangeFromDialogCtrl", name); //广播一个消息让课件页切换课件
+            console.log(name);
+        }
+        $("#coursewave,#newResouse,#editAudio,#editImage").on('hide',function(e){
+            e.preventDefault();
+        });
+        $scope.btnCreatCourseWare = function(){//功能未完成
+            //创建新课件
+            var newCourseWare = {
+                "user": "u4",
+                "name": "默认课程名称",
+                "root_category": "cat4",
+                "layoutx": 3,
+                "layouty": 4
+            };
+            $scope.users.push(newCourseWare);
+            //更改当前页
+            serverCookie.getConfigCourse(newCourseWare.user);//改变此时cookie
+            //更改数据库设置
+        }
+    }])
 /**
  * Controller
  * 孩子页
@@ -23,9 +81,6 @@ xiaoyudiControllers
         $scope.users = user.query(function(response){
             console.log(response);
             //取得默认课件的root category 分类
-            response.forEach(function(ite){
-                ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
-            });
             var rootSurface = findRootCategory(response,userName);   //u1: cat1
             var root_category = rootSurface.root_category;
             $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
@@ -42,9 +97,8 @@ xiaoyudiControllers
  * 课件编辑页
  */
     .controller('CourseCtrl',
-              ['$scope','synFile','synManifest','user','resources','card','card_tree','serverCookie',
-    function ($scope,synFile,synManifest,user,resources,card,card_tree,serverCookie) {
-        removeClass();
+              ['$scope','synManifest','user','resources','card','card_tree','serverCookie',
+    function ($scope,synManifest,user,resources,card,card_tree,serverCookie) {
         document.title = "课件";
         //用户ID 设为u1 默认载入课件：《阶段一》
         var userName = serverCookie.getConfigCourse(null);
@@ -53,9 +107,6 @@ xiaoyudiControllers
         $scope.users = user.query(function(response){
             console.log(response);
             //取得默认课件的root category 分类
-            response.forEach(function(ite){
-                ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
-            });
             var rootSurface = findRootCategory(response,userName);   //u1: cat1
             var root_category = rootSurface.root_category;
             $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
@@ -71,27 +122,14 @@ xiaoyudiControllers
             $scope.column_num = parseInt($scope.layout.substring(0, 1));              //布局的 列数
             $scope.classLine = 12 / $scope.column_num;
         }
-        $scope.changeCourse = function(name){
-            serverCookie.getConfigCourse(name);//改变此时cookie
-            console.log(name);
-        }
         $scope.switch = function(){
             $scope.changeCourseName=($scope.changeCourseName)?false:true;
         }
-        $scope.btnCreatCourseWare = function(){//功能未完成
-            //创建新课件
-            var newCourseWare = {
-                    "user": "u4",
-                    "name": "默认课程名称",
-                    "root_category": "cat4",
-                    "layoutx": 3,
-                    "layouty": 4
-                };
-            $scope.users.push(newCourseWare);
-            //更改当前页
-            serverCookie.getConfigCourse(newCourseWare.user);//改变此时cookie
-            //更改数据库设置
-        }
+        $scope.$on("CourseCtrlChangeFromDialogCtrl",
+            function (event, msg) {
+                console.log("CourseCtrl", msg);
+            });
+
     }])
 /**
  * Controller
@@ -100,7 +138,12 @@ xiaoyudiControllers
     .controller('NewCardCtrl', ['$scope', '$log','synFile',
     function ($scope, $log,synFile) {
         removeClass();
-        synFile.query({id:'r1'});
+        $('#fileupload').fileupload({
+            done: function (e, data) {
+                $.save()
+            }
+        });
+        console.log($scope.file);
         document.title = "新建卡片";
         $scope.addCard = function(card){
             console.log(card);

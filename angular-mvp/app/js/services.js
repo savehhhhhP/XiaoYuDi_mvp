@@ -26,6 +26,10 @@ angular.module('myApp.services', ['ngResource','ngCookies'])
             }
         }
     }])
+    .factory('saveOneFile',['$resource',
+    function($resource){
+        return $resource('')
+    }])
     //获取资源列表 （id）
     .factory('synManifest',['$resource',
         function ($resource) {
