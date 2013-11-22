@@ -6,6 +6,25 @@
 // Demonstrate how to register services
 // In this case it is a simple value service.
 angular.module('myApp.services', ['ngResource','ngCookies'])
+    .factory('init_getData',['$cookies',
+    function($cookies){
+        return {
+            isNewUser:function(){
+                if($cookies.userId == null){
+                    return true;
+                }
+                return false;
+            },
+            getUserData:function(userid){
+                if($cookies.userId == null){
+                    //新建用户id
+                    return $cookies.userId = userid;  //Math.uuid()
+                }
+                return $cookies.userId;
+            }
+        }
+    }])
+
     //设置cookie  记录用户选择的课件
     .factory('serverCookie',['$cookies',
     function($cookies){

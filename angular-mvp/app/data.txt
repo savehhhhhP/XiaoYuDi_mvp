@@ -1,35 +1,32 @@
-drop table resources
-drop table card
-drop table card_tree
-drop table user
-create table resources(id varchar(36) primary key, filename varchar(32))
-create table card(id varchar(36) primary key,type varchar(8),name varchar(64),image var(36),audio varchar(36),user varchar(36))
-create table card_tree(child varchar(36), parent varchar(36), position int,animation varchar(10))
-create table user(id varchar(36), name varchar(64), root_category varchar(36),layoutx int,layouty int)
-insert into resources values("r1","r1")
-insert into resources values("r2","r2")
-insert into resources values("r3","r3")
-insert into resources values("r4","r4")
-insert into resources values("r5","r5")
-insert into resources values("r6","r6")
-insert into resources values("r7","r7")
-insert into resources values("r8","r8")
-insert into user values("u1","阶段一","cat1",3,4)
-insert into card values("cat1","category","root_category",null,null,null)
-insert into card values("card1","card","我想吃苹果","r1","r5","u1")
-insert into card_tree values("card1","cat1", 0,"scale")
-insert into user values("u2","阶段二","cat2",3,4)
-insert into card values("cat2","category","root_category",null,null,null)
-insert into card values("card2","card","我想喝水","r2","r6","u2")
-insert into card_tree values("card1","cat2", 0,"scale")
-insert into card_tree values("card2","cat2", 1,"scale")
-insert into user values("u3","阶段三","cat3",3,4)
-insert into card values("cat3","category","root_category",null,null,null)
-insert into card values("card3","card","我想吃薯片","r3","r7","u3")
-insert into card values("card4","card","我想尿尿","r4","r8","u3")
-insert into card_tree values("card1","cat3", 0,"scale")
-insert into card_tree values("card2","cat3", 1,"scale")
-insert into card_tree values("card3","cat3", 2,"scale")
-insert into card_tree values("card4","cat3", 3,"scale")
-
-
+db.resources.save({ "id":"r1", "filename":"p1_11.jpg" });
+db.resources.save({ "id":"r2", "filename":"p1_12.jpg" });
+db.resources.save({ "id":"r3", "filename":"p1_13.jpg" });
+db.resources.save({ "id":"r4", "filename":"p1_21.jpg" });
+db.resources.save({ "id":"r5", "filename":"s5" });
+db.resources.save({ "id":"r6", "filename":"s1_12.mp3" });
+db.resources.save({ "id":"r7", "filename":"s7" });
+db.resources.save({ "id":"r8", "filename":"s1_21.mp3" });
+db.user.save({"id":"system","name":"阶段一","rootcategory":"cat1","layoutx":"3","layouty":"4"});
+db.user.save({"id":"system","name":"阶段二","rootcategory":"cat2","layoutx":"3","layouty":"4"});
+db.user.save({"id":"system","name":"阶段三","rootcategory":"cat3","layoutx":"3","layouty":"4"});
+db.card.save({"id":"cat1","type":"category","name":"root_category","image":"null","audio":"null","user":"null"});
+db.card.save({"id":"cat2","type":"category","name":"root_category","image":"null","audio":"null","user":"null"});
+db.card.save({"id":"cat3","type":"category","name":"root_category","image":"null","audio":"null","user":"null"});
+db.card.save({"id":"card1","type":"card","name":"我想吃苹果","image":"r1","audio":"r5","user":"system"});
+db.card.save({"id":"card1","type":"card","name":"我想喝水","image":"r2","audio":"r6","user":"system"});
+db.card.save({"id":"card1","type":"card","name":"我想吃薯片","image":"r3","audio":"r7","user":"system"});
+db.card.save({"id":"card1","type":"card","name":"我想尿尿","image":"r4","audio":"r8","user":"system"});
+db.card_tree.save({"child":"card1","parent":"cat1","position":"0","animation":"scale"});
+db.card_tree.save({"child":"card1","parent":"cat2","position":"0","animation":"scale"});
+db.card_tree.save({"child":"card2","parent":"cat2","position":"1","animation":"scale"});
+db.card_tree.save({"child":"card1","parent":"cat3","position":"0","animation":"scale"});
+db.card_tree.save({"child":"card2","parent":"cat3","position":"1","animation":"scale"});
+db.card_tree.save({"child":"card3","parent":"cat3","position":"2","animation":"scale"});
+db.card_tree.save({"child":"card4","parent":"cat3","position":"3","animation":"scale"});
+db.manifest.save({"user":"public","resources":"r1","timestamp":new Date()});
+db.manifest.save({"user":"public","resources":"r2","timestamp":new Date()});
+db.manifest.save({"user":"public","resources":"r3","timestamp":new Date()});
+db.manifest.save({"user":"public","resources":"r4","timestamp":new Date()});
+db.manifest.save({"user":"public","resources":"r5","timestamp":new Date()});
+db.manifest.save({"user":"public","resources":"r6","timestamp":new Date()});
+db.manifest.save({"user":"public","resources":"r7","timestamp":new Date()});

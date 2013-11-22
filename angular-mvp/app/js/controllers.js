@@ -94,15 +94,33 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
     }])
 /**
  * Controller
- * 课件编辑页
+ * 课件编辑页                (首页)
  */
     .controller('CourseCtrl',
-              ['$scope','synManifest','user','resources','card','card_tree','serverCookie',
-    function ($scope,synManifest,user,resources,card,card_tree,serverCookie) {
+              ['$scope','synManifest','user','resources','card','card_tree','init_getData','$http','$templateCache',
+    function ($scope,synManifest,user,resources,card,card_tree,init_getData,$http,$templateCache) {
         document.title = "课件";
+        var userName;
+//        此处验证用户是否为新用户，并且取得用户名---用户身份
+        if(init_getData.isNewUser()){
+            var newid = {id:"lxl"};
+            init_getData.getUserData(newid);
+            console.log("post"+newid);
+            //新用户预制数据
+            $http({method: "POST", url: "http://localhost:3000/services/newUser",data:newid, cache: $templateCache}).
+                success(function(msg, status, headers, config) {
+                    console.log(msg);
+                }).
+                error(function(err, status, headers, config) {
+                    alert('error: ' + err);
+                });
+        }
+        userName = init_getData.getUserData(newid);
+        alert(userName);
+
         //用户ID 设为u1 默认载入课件：《阶段一》
-        var userName = serverCookie.getConfigCourse(null);
-        console.log(userName);
+        alert(userName);
+
         //取得所有 课件(user.json)信息
         $scope.users = user.query(function(response){
             console.log(response);
