@@ -6,7 +6,7 @@
 
 //angular.module('myApp.controllers', []);
 
-var xiaoyudiControllers = angular.module('myApp.controllers', []);
+var xiaoyudiControllers = angular.module('myApp.controllers', ['ngCookies']);
 /**
  * Controller
  * 对话框
@@ -27,7 +27,7 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
                 user:"u1"
             }
             console.log(card);
-            $http({method: "POST", url: "http://localhost:3000/services/newcard",data:card, cache: $templateCache}).
+            $http({method: "POST", url: portName+"/services/newcard",data:card, cache: $templateCache}).
                 success(function(msg, status, headers, config) {
                     console.log(msg);
                 }).
@@ -97,44 +97,58 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
  * 课件编辑页                (首页)
  */
     .controller('CourseCtrl',
-              ['$scope','synManifest','user','resources','card','card_tree','init_getData','$http','$templateCache',
-    function ($scope,synManifest,user,resources,card,card_tree,init_getData,$http,$templateCache) {
+              ['$scope','synManifest','user','resources','card','card_tree','init_getData','$http','$templateCache','$cookies',
+    function ($scope,synManifest,user,resources,card,card_tree,init_getData,$http,$templateCache,$cookies) {
         document.title = "课件";
         var userName;
 //        此处验证用户是否为新用户，并且取得用户名---用户身份
-        if(init_getData.isNewUser()){
-            var newid = {id:"lxl"};
-            init_getData.getUserData(newid);
-            console.log("post"+newid);
+        if($cookies.user == null){
+            $cookies.user = new UUID().toString();    //{id:"lxl"};
+            console.log("post userid  :"+$cookies.user);
+
             //新用户预制数据
-            $http({method: "POST", url: "http://localhost:3000/services/newUser",data:newid, cache: $templateCache}).
+            $http({method: "POST", url: portName+"/services/newUser",data:{id:$cookies.user}, cache: $templateCache}).
                 success(function(msg, status, headers, config) {
                     console.log(msg);
                 }).
                 error(function(err, status, headers, config) {
                     alert('error: ' + err);
+                    $cookies.user = null;
                 });
         }
-        userName = init_getData.getUserData(newid);
-        alert(userName);
+        userName = $cookies.user;
+        console.log(userName);
 
-        //用户ID 设为u1 默认载入课件：《阶段一》
-        alert(userName);
+        if($cookies.curSurface == null){                  //第一次进入
+            //默认载入课件：《阶段一》
+            $cookies.curSurface = "cat1";
+        }
 
-        //取得所有 课件(user.json)信息
-        $scope.users = user.query(function(response){
-            console.log(response);
-            //取得默认课件的root category 分类
-            var rootSurface = findRootCategory(response,userName);   //u1: cat1
-            var root_category = rootSurface.root_category;
-            $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
-            $scope.courseName = rootSurface.name;           //标题
-            $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
-            //取得root category 分类下面的 元素（卡片或者分类）
-            getChild(root_category,card_tree,card,$scope,userName);
-        });
-        //取得所有 资源的文件名
-        $scope.resources = resources.query();
+        //取得课件信息
+        $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
+            success(function(msg, status, headers, config) {
+                $scope.users = msg;
+
+                var rootSurface = findRootCategory(msg,$cookies.curSurface);   //u1: cat1
+                $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
+                $scope.courseName = rootSurface.name;           //标题
+                $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
+
+                //取得root category 分类下面的 元素（卡片或者分类）
+                $http({method: "GET", url: portName+"/services/cardData/"+rootSurface.rootcategory , cache: $templateCache}).
+                    success(function(msg, status, headers, config) {
+                        console.log(msg);
+                        $scope.childResCards = msg;
+                    }).
+                    error(function(err, status, headers, config) {
+                        alert('error: ' + err);
+                    });
+            }).
+            error(function(err, status, headers, config) {
+                alert('error: ' + err);
+                $cookies.user = null;
+            });
+
         $scope.changeLayout = function () {
             //记录修改的布局                                                          数据库操作处打标记    db
             $scope.column_num = parseInt($scope.layout.substring(0, 1));              //布局的 列数
@@ -229,46 +243,11 @@ var removeClass = function(){                   //此处的jquery操作需要优
 }
 
 /**
- * 取得root category 分类下面的 元素（卡片或者分类）
- */
-var getChild = function (root_category, card_tree,card, scope,cookies) {
-    card_tree.query(function (response) {
-        // Setting a cookie
-        //cookies.myCard_tree = response;
-        var childs = response.filter(function (item) {
-            if (item.parent == root_category) {
-                return true;
-            }
-        })
-        scope.childs = childs;
-        getChildRes(childs,card,scope,cookies);
-    });
-}
-/**
- * 取得card.jason  对应课件root页的card信息
- */
-var getChildRes = function(childs,card,scope,cookies){
-    //取得所有 （card.json）信息
-    card.query(function (response){
-        // Setting a cookie
-        //cookies.myCard = response;
-        var chRes = response.filter(function(iteRes){
-            return childs.some(function(ite){
-                if(iteRes.id == ite.child){
-                    return true;
-                }
-            });
-        });
-        scope.childResCards = chRes;
-        console.log(chRes);
-    });
-}
-/**
  * 取得默认课件的root category 分类
  */
 var findRootCategory = function(users,name){
     return users.filter(function(item) {
-        if(item.user ==name) {
+        if(item.rootcategory ==name) {
             return true;
         }
     }).shift();

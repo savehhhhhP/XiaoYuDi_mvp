@@ -10,17 +10,20 @@ angular.module('myApp.services', ['ngResource','ngCookies'])
     function($cookies){
         return {
             isNewUser:function(){
-                if($cookies.userId == null){
+                var user = $cookies.user;
+                if(user == null){
                     return true;
                 }
                 return false;
             },
             getUserData:function(userid){
-                if($cookies.userId == null){
+                var user = $cookies.user;
+                if(user == null){
                     //新建用户id
-                    return $cookies.userId = userid;  //Math.uuid()
+                    $cookies.user = userid;
+                    return userid;  //Math.uuid()
                 }
-                return $cookies.userId;
+                return $cookies.user;
             }
         }
     }])

@@ -30,3 +30,6 @@ db.manifest.save({"user":"public","resources":"r4","timestamp":new Date()});
 db.manifest.save({"user":"public","resources":"r5","timestamp":new Date()});
 db.manifest.save({"user":"public","resources":"r6","timestamp":new Date()});
 db.manifest.save({"user":"public","resources":"r7","timestamp":new Date()});
+
+ { id: 'lxl3',name: '阶段一',rootcategory: 'cat1',layoutx: '3',layouty: '4' }
+E11000 duplicate key error index: droplings.user.$name_1  dup key
