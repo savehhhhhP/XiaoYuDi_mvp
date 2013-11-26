@@ -47,7 +47,7 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
         $scope.goEditAudio = function(){
             console.log($scope.file);
         }
-
+        //切换课件
         $scope.changeCourse = function(rootcategory){
             $cookies.curSurface = rootcategory;//改变此时cookie
             $scope.$broadcast("CourseCtrlChangeFromDialogCtrl", rootcategory); //广播一个消息让课件页切换课件
@@ -75,26 +75,34 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
  * Controller
  * 孩子页
  */
-    .controller('childCtrl', ['$scope', 'card_tree','synManifest','card','serverCookie','resources','user',
-    function ($scope,card_tree,synManifest,card,serverCookie,resources,user) {
+    .controller('childCtrl', ['$scope','$cookies','$http','$templateCache',
+    function ($scope,$cookies,$http,$templateCache) {
         removeClass();
         document.title = "孩子页面";
-        //用户ID 设为u1 默认载入课件：《阶段一》
-        var userName = serverCookie.getConfigCourse(null);
-        //取得所有 课件(user.json)信息
-        $scope.users = user.query(function(response){
-            console.log(response);
-            //取得默认课件的root category 分类
-            var rootSurface = findRootCategory(response,userName);   //u1: cat1
-            var root_category = rootSurface.root_category;
-            $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
-            $scope.courseName = rootSurface.name;           //标题
-            $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
-            //取得root category 分类下面的 元素（卡片或者分类）
-            getChild(root_category,card_tree,card,$scope,userName);
-        });
-        //取得所有 资源的文件名
-        $scope.resources = resources.query();
+        var userName = $cookies.user;
+        //取得所有 课件信息
+        $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
+            success(function(msg) {
+                $scope.users = msg;
+                var rootSurface = findRootCategory(msg,$cookies.curSurface);   //u1: cat1
+                $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
+                $scope.courseName = rootSurface.name;           //标题
+                $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
+
+                //取得root category 分类下面的 元素（卡片或者分类）
+                $http({method: "GET", url: portName+"/services/cardData/"+rootSurface.rootcategory , cache: $templateCache}).
+                    success(function(msg) {
+                        console.log(msg);
+                        $scope.childResCards = msg;
+                    }).
+                    error(function(err) {
+                        alert('error: ' + err);
+                    });
+            }).
+            error(function(err) {
+                alert('error: ' + err);
+                $cookies.user = null;
+            });
     }])
 /**
  * Controller
@@ -105,6 +113,7 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
     function ($scope,synManifest,user,resources,card,card_tree,init_getData,$http,$templateCache,$cookies) {
         document.title = "课件";
         var userName;
+
 //        此处验证用户是否为新用户，并且取得用户名---用户身份
         if($cookies.user == null){
             $cookies.user = new UUID().toString();    //{id:"lxl"};
@@ -133,8 +142,6 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
             success(function(msg) {
                 $scope.users = msg;
 
-                $scope.$emit("setUsersFromCourseCtrl", msg); //冒泡一个消息让父controller知道当前用户的所有课件信息
-
                 var rootSurface = findRootCategory(msg,$cookies.curSurface);   //u1: cat1
                 $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
                 $scope.courseName = rootSurface.name;           //标题
@@ -158,10 +165,18 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
         $scope.changeLayout = function () {
             //记录修改的布局                                                          数据库操作处打标记    db
             $scope.column_num = parseInt($scope.layout.substring(0, 1));              //布局的 列数
-            var row = parseInt($scope.layout.substring(1, 2));    //行数
+            var row = parseInt($scope.layout.substring(1, 2));                        //行数
             $scope.classLine = 12 / $scope.column_num;
             //提交修改的数据
-            $http({method: "POST", url: portName+"/services/changeLayout/",data:{id:$cookies.user,rootcategory:$cookies.curSurface,layoutx:$scope.column_num,layouty:row}, cache: $templateCache}).
+            console.log("change layout "+ $scope.column_num + row);
+            $http({method: "POST", url: portName+"/services/changeLayout/",
+                data:{
+                    id:$cookies.user,
+                    rootcategory:$cookies.curSurface,
+                    layoutx:$scope.column_num,
+                    layouty:row
+                },
+                cache: $templateCache}).
                 success(function(msg) {
                     console.log("post change layout cuccess "+msg);
                 }).
@@ -169,7 +184,36 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
                     console.log(err);
                 });
         }
+        //此处点击了切换课件的下拉按钮
+        $scope.sayImChange= function(){
+            $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
+                success(function(msg) {
+                    $scope.users = msg;
+                    $scope.$emit("setUsersFromCourseCtrl", msg); //冒泡一个消息让父controller知道当前用户的所有课件信息
+                }).
+                error(function(err) {
+                    alert('error: get user data' + err);
+                });
+        }
+
+        //课件标题修改事件
         $scope.switch = function(){
+            //修改完成时提交修改到服务器
+            if($scope.changeCourseName){
+                $http({method: "POST", url: portName+"/services/changeCourseName/",
+                    data:{
+                        id:$cookies.user,
+                        rootcategory:$cookies.curSurface,
+                        name:$scope.courseName
+                    },
+                    cache: $templateCache}).
+                    success(function(msg) {
+                        console.log("post change layout cuccess "+msg);
+                    }).
+                    error(function(err) {
+                        console.log(err);
+                    });
+            }
             $scope.changeCourseName=($scope.changeCourseName)?false:true;
         }
         $scope.$on("CourseCtrlChangeFromDialogCtrl",
@@ -243,7 +287,6 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
                 }
             });
         });
-
     }]);
 
 /**
@@ -265,62 +308,4 @@ var findRootCategory = function(users,name){
             return true;
         }
     }).shift();
-}
-
-/**
- * 找出一个surface内的所有资源
- */
-var getResource = function(resource_ids,resource){
-    var results =[];
-    var i= 0,j=0;
-    for(;i<resource_ids.length;i++){
-        for(j=0;j<resource.length;j++){
-            if(resource_ids[i].child == resource[j].id){
-                results.push(resource[j]);
-                continue;
-            }
-        }
-    }
-    return results;
-}
-
-/**
- * 根据每个课件所对应的树将 对应父节点的子节点id找出
- * 子节点包括分类和卡片
- */
-var getSurface = function(parents,cardtree){
-    var i= 0;
-    var results = [];
-    for (; i < cardtree.length; i++) {              //循环分类
-        if (cardtree[i].parent == parents) {
-            results.push(cardtree[i]);
-        }
-    }
-    return results;
-}
-
-/**
- * 初始化数据  行列 数组的值设为1
- * @param datas
- * @returns {*}
- */
-var initData = function(datas){
-    var i =0;
-    for(;i<datas.length;i++){
-        datas[i] = i;
-    }
-    return datas;
-}
-/**
- * 找出分类节点
- */
-var findCatalog = function(resource){
-    var results =[];
-    var i=0;
-    for(;i<resource.length;i++){
-        if(resource[i].type == "catalog"){
-            results.push(resource[i]);
-        }
-    }
-    return results;
 }

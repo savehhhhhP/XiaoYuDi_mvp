@@ -8,14 +8,16 @@
         </div>
 
         <div class="col-sm-4 col-md-4">
-            <button data-toggle="modal" href="#coursewave" class="btn-lg btn-mvp" ng-hide="changeCourseName">
-                {{courseName}}<span class="caret"></span>
-            </button>
-            <input class="form-control text-center" placeholder=".col-xs-2" id="focusedInput" type="text"
-                   ng-model="courseName" ng-show="changeCourseName"/>
-            <button class="btn-lg btn-mvp" ng-click="switch()">
-                <span class="glyphicon glyphicon-pencil"></span>
-            </button>
+            <form>
+                <button data-toggle="modal" href="#coursewave" class="btn-lg btn-mvp" ng-hide="changeCourseName" ng-click="sayImChange()">
+                    {{courseName}}<span class="caret"></span>
+                </button>
+                <input class="form-control text-center" placeholder=".col-xs-2" id="focusedInput" type="text"
+                       ng-model="courseName" ng-show="changeCourseName"/>
+                <button class="btn-lg btn-mvp" ng-click="switch()" type="submit">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </button>
+            </form>
         </div>
         <div align="right" class="col-sm-4 col-md-4">
             <a href="#child" class="btn btn-lg btn-mvp">
