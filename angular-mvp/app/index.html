@@ -33,7 +33,7 @@
         <div class="modal-body">
             <div class="row">
                 <div class="col-sm-3 col-md-3" ng-repeat="user in users">
-                    <a ng-href="#coursewave" ng-click="changeCourse(user.user)"  class="thumbnail">
+                    <a ng-href="#coursewave" ng-click="changeCourse(user.rootcategory)"  class="thumbnail">
                         <img ng-src="{{user.imgUrl}}" alt="{{user.name}}">
                     </a>
                     <h3 class="text-center">{{user.name}}</h3>

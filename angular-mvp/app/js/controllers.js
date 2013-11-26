@@ -11,9 +11,18 @@ var xiaoyudiControllers = angular.module('myApp.controllers', ['ngCookies']);
  * Controller
  * 对话框
  */
-xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$http','$templateCache',
-    function ($scope,user,serverCookie,$http,$templateCache) {
+xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http','$templateCache',
+    function ($scope,user,$cookies,$http,$templateCache) {
         removeClass();
+        $scope.$on("setUsersFromCourseCtrl",
+            function (event, msg) {
+                console.log("dialogCtrl", msg);
+                msg.forEach(function(ite){
+                    ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
+                });
+                $scope.users = msg;
+            });
+
         $scope.creatNewCard = function(){//提交操作
             var card ={
                 card:"card5",
@@ -28,26 +37,21 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
             }
             console.log(card);
             $http({method: "POST", url: portName+"/services/newcard",data:card, cache: $templateCache}).
-                success(function(msg, status, headers, config) {
+                success(function(msg) {
                     console.log(msg);
                 }).
-                error(function(err, status, headers, config) {
+                error(function(err) {
                     alert('error: ' + err);
                 });
         }
         $scope.goEditAudio = function(){
             console.log($scope.file);
         }
-        $scope.users = user.query(function(response){
-            response.forEach(function(ite){
-                ite.imgUrl = "img/surface.jpg"; //给课件设一个图片    以后应该改为用缩略图
-            });
-        });
-        $scope.changeCourse = function(name){
-            serverCookie.getConfigCourse(name);//改变此时cookie
 
-            $scope.$broadcast("CourseCtrlChangeFromDialogCtrl", name); //广播一个消息让课件页切换课件
-            console.log(name);
+        $scope.changeCourse = function(rootcategory){
+            $cookies.curSurface = rootcategory;//改变此时cookie
+            $scope.$broadcast("CourseCtrlChangeFromDialogCtrl", rootcategory); //广播一个消息让课件页切换课件
+            console.log(rootcategory);
         }
         $("#coursewave,#newResouse,#editAudio,#editImage").on('hide',function(e){
             e.preventDefault();
@@ -108,10 +112,10 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
 
             //新用户预制数据
             $http({method: "POST", url: portName+"/services/newUser",data:{id:$cookies.user}, cache: $templateCache}).
-                success(function(msg, status, headers, config) {
+                success(function(msg) {
                     console.log(msg);
                 }).
-                error(function(err, status, headers, config) {
+                error(function(err) {
                     alert('error: ' + err);
                     $cookies.user = null;
                 });
@@ -126,8 +130,10 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
 
         //取得课件信息
         $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
-            success(function(msg, status, headers, config) {
+            success(function(msg) {
                 $scope.users = msg;
+
+                $scope.$emit("setUsersFromCourseCtrl", msg); //冒泡一个消息让父controller知道当前用户的所有课件信息
 
                 var rootSurface = findRootCategory(msg,$cookies.curSurface);   //u1: cat1
                 $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
@@ -136,15 +142,15 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
 
                 //取得root category 分类下面的 元素（卡片或者分类）
                 $http({method: "GET", url: portName+"/services/cardData/"+rootSurface.rootcategory , cache: $templateCache}).
-                    success(function(msg, status, headers, config) {
+                    success(function(msg) {
                         console.log(msg);
                         $scope.childResCards = msg;
                     }).
-                    error(function(err, status, headers, config) {
+                    error(function(err) {
                         alert('error: ' + err);
                     });
             }).
-            error(function(err, status, headers, config) {
+            error(function(err) {
                 alert('error: ' + err);
                 $cookies.user = null;
             });
@@ -152,7 +158,16 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
         $scope.changeLayout = function () {
             //记录修改的布局                                                          数据库操作处打标记    db
             $scope.column_num = parseInt($scope.layout.substring(0, 1));              //布局的 列数
+            var row = parseInt($scope.layout.substring(1, 2));    //行数
             $scope.classLine = 12 / $scope.column_num;
+            //提交修改的数据
+            $http({method: "POST", url: portName+"/services/changeLayout/",data:{id:$cookies.user,rootcategory:$cookies.curSurface,layoutx:$scope.column_num,layouty:row}, cache: $templateCache}).
+                success(function(msg) {
+                    console.log("post change layout cuccess "+msg);
+                }).
+                error(function(err) {
+                    console.log(err);
+                });
         }
         $scope.switch = function(){
             $scope.changeCourseName=($scope.changeCourseName)?false:true;
@@ -161,7 +176,6 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','serverCookie','$
             function (event, msg) {
                 console.log("CourseCtrl", msg);
             });
-
     }])
 /**
  * Controller
