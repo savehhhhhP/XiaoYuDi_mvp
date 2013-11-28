@@ -75,59 +75,49 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
  * Controller
  * 孩子页
  */
-    .controller('childCtrl', ['$scope','$cookies','$http','$templateCache',
-    function ($scope,$cookies,$http,$templateCache) {
+    .controller('childCtrl', ['$scope','$cookies','getData',
+    function ($scope,$cookies,getData) {
         removeClass();
         document.title = "孩子页面";
-        var userName = $cookies.user;
         //取得所有 课件信息
-        $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
-            success(function(msg) {
-                $scope.users = msg;
-                var rootSurface = findRootCategory(msg,$cookies.curSurface);   //u1: cat1
-                $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
-                $scope.courseName = rootSurface.name;           //标题
-                $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
+        getData.getCoursewaveData(function(result){
+            $scope.user = result.users;
+            $scope.classLine = result.classLine;
+            $scope.courseName = result.courseName;
+            $scope.layout = result.layout;
+            $scope.childResCards = result.childResCards;
+            console.log(result.childResCards);
+        });
 
-                //取得root category 分类下面的 元素（卡片或者分类）
-                $http({method: "GET", url: portName+"/services/cardData/"+rootSurface.rootcategory , cache: $templateCache}).
-                    success(function(msg) {
-                        console.log(msg);
-                        $scope.childResCards = msg;
-                    }).
-                    error(function(err) {
-                        alert('error: ' + err);
-                    });
-            }).
-            error(function(err) {
-                alert('error: ' + err);
-                $cookies.user = null;
-            });
+
+        //点击图片事件
+        $scope.clickImg = function (audio) {
+            console.log("play!~~~"+audio);
+            $("#" + audio).jPlayer({
+                ready: function () {
+                    $(this).jPlayer("setMedia", {
+                        mp3: "http://115.28.35.182/services/data/app/file/" + audio
+                    }).jPlayer("play");
+                },
+                supplied: "mp3"
+                //wmode: "window"
+            }).jPlayer("play");
+        }
     }])
 /**
  * Controller
  * 课件编辑页                (首页)
  */
     .controller('CourseCtrl',
-              ['$scope','synManifest','user','resources','card','card_tree','init_getData','$http','$templateCache','$cookies',
-    function ($scope,synManifest,user,resources,card,card_tree,init_getData,$http,$templateCache,$cookies) {
+              ['$scope','$http','$templateCache','$cookies','init_Data','getData','setData',
+    function ($scope,$http,$templateCache,$cookies,init_Data,getData,setData) {
         document.title = "课件";
         var userName;
 
 //        此处验证用户是否为新用户，并且取得用户名---用户身份
         if($cookies.user == null){
-            $cookies.user = new UUID().toString();    //{id:"lxl"};
-            console.log("post userid  :"+$cookies.user);
-
-            //新用户预制数据
-            $http({method: "POST", url: portName+"/services/newUser",data:{id:$cookies.user}, cache: $templateCache}).
-                success(function(msg) {
-                    console.log(msg);
-                }).
-                error(function(err) {
-                    alert('error: ' + err);
-                    $cookies.user = null;
-                });
+            $cookies.user = new UUID().toString();
+            init_Data.init();
         }
         userName = $cookies.user;
         console.log(userName);
@@ -136,85 +126,53 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
             //默认载入课件：《阶段一》
             $cookies.curSurface = "cat1";
         }
-
-        //取得课件信息
-        $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
-            success(function(msg) {
-                $scope.users = msg;
-
-                var rootSurface = findRootCategory(msg,$cookies.curSurface);   //u1: cat1
-                $scope.classLine = 12/ rootSurface.layoutx;     //布局行的样式
-                $scope.courseName = rootSurface.name;           //标题
-                $scope.layout = rootSurface.layoutx.toString()+rootSurface.layouty.toString();
-
-                //取得root category 分类下面的 元素（卡片或者分类）
-                $http({method: "GET", url: portName+"/services/cardData/"+rootSurface.rootcategory , cache: $templateCache}).
-                    success(function(msg) {
-                        console.log(msg);
-                        $scope.childResCards = msg;
-                    }).
-                    error(function(err) {
-                        alert('error: ' + err);
-                    });
-            }).
-            error(function(err) {
-                alert('error: ' + err);
-                $cookies.user = null;
-            });
-
+        //取得所有课件信息 和当前使用的课件信息
+        getData.getCoursewaveData(function(result){
+            console.log(result);
+            $scope.user = result.users;
+            $scope.classLine = result.classLine;
+            $scope.courseName = result.courseName;
+            $scope.layout = result.layout;
+            $scope.childResCards = result.childResCards;
+        });
+        //切换了布局
         $scope.changeLayout = function () {
             //记录修改的布局                                                          数据库操作处打标记    db
             $scope.column_num = parseInt($scope.layout.substring(0, 1));              //布局的 列数
             var row = parseInt($scope.layout.substring(1, 2));                        //行数
             $scope.classLine = 12 / $scope.column_num;
             //提交修改的数据
-            console.log("change layout "+ $scope.column_num + row);
-            $http({method: "POST", url: portName+"/services/changeLayout/",
-                data:{
-                    id:$cookies.user,
-                    rootcategory:$cookies.curSurface,
-                    layoutx:$scope.column_num,
-                    layouty:row
-                },
-                cache: $templateCache}).
-                success(function(msg) {
-                    console.log("post change layout cuccess "+msg);
-                }).
-                error(function(err) {
-                    console.log(err);
-                });
+            setData.postLayout({
+                id:$cookies.user,
+                rootcategory:$cookies.curSurface,
+                layoutx:$scope.column_num,
+                layouty:row
+            });
         }
         //此处点击了切换课件的下拉按钮
         $scope.sayImChange= function(){
-            $http({method: "GET", url: portName+"/services/courseData/"+$cookies.user , cache: $templateCache}).
-                success(function(msg) {
-                    $scope.users = msg;
-                    $scope.$emit("setUsersFromCourseCtrl", msg); //冒泡一个消息让父controller知道当前用户的所有课件信息
-                }).
-                error(function(err) {
-                    alert('error: get user data' + err);
-                });
+            getData.getUserData(function(user){
+                $scope.$emit("setUsersFromCourseCtrl", user); //冒泡一个消息让父controller知道当前用户的所有课件信息
+            });
         }
 
         //课件标题修改事件
         $scope.switch = function(){
             //修改完成时提交修改到服务器
             if($scope.changeCourseName){
-                $http({method: "POST", url: portName+"/services/changeCourseName/",
-                    data:{
-                        id:$cookies.user,
-                        rootcategory:$cookies.curSurface,
-                        name:$scope.courseName
-                    },
-                    cache: $templateCache}).
-                    success(function(msg) {
-                        console.log("post change layout cuccess "+msg);
-                    }).
-                    error(function(err) {
-                        console.log(err);
-                    });
+                setData.postCourseName({
+                    id:$cookies.user,
+                    rootcategory:$cookies.curSurface,
+                    name:$scope.courseName
+                });
             }
             $scope.changeCourseName=($scope.changeCourseName)?false:true;
+        }
+        //点击了某个分类
+        $scope.gotoCategory = function(childResCard){
+            if(childResCard.type=="category"){
+                console.log("test");
+            }
         }
         $scope.$on("CourseCtrlChangeFromDialogCtrl",
             function (event, msg) {

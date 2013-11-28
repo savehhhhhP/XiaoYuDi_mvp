@@ -1,88 +1,92 @@
 'use strict';
 
 /* Services */
-
-
 // Demonstrate how to register services
 // In this case it is a simple value service.
 angular.module('myApp.services', ['ngResource','ngCookies'])
-    .factory('init_getData',['$cookies',
-    function($cookies){
+    .factory('init_Data',['$cookies','$http',
+    function($cookies,$http){
         return {
-            isNewUser:function(){
-                var user = $cookies.user;
-                if(user == null){
-                    return true;
-                }
-                return false;
-            },
-            getUserData:function(userid){
-                var user = $cookies.user;
-                if(user == null){
-                    //新建用户id
-                    $cookies.user = userid;
-                    return userid;  //Math.uuid()
-                }
-                return $cookies.user;
+            init:function(){
+                console.log("post userid  :"+$cookies.user);
+                //新用户预制数据
+                $http.post(portName+"/services/newUser",{id:$cookies.user}).
+                    success(function(msg) {
+                        console.log(msg);
+                    }).
+                    error(function(err) {
+                        alert('error: post newuser' + err);
+                        $cookies.user = null;
+                    });
             }
         }
     }])
+    .factory('getData',['$cookies','$http',
+        function ($cookies, $http) {
+            return{
+                getCoursewaveData: function (callback) {
+                    //取得课件信息
+                    var result = {};
+                    $http.get(portName + "/services/courseData/" + $cookies.user).
+                        success(function (msg) {
+                            result.users = msg;
+                            var rootSurface = findRootCategory(msg, $cookies.curSurface);   //u1: cat1
+                            result.classLine = 12 / rootSurface.layoutx;     //布局行的样式
+                            result.courseName = rootSurface.name;           //标题
+                            result.layout = rootSurface.layoutx.toString() + rootSurface.layouty.toString();
 
-    //设置cookie  记录用户选择的课件
-    .factory('serverCookie',['$cookies',
-    function($cookies){
-        return {
-            getConfigCourse:function(name){
-                if(name!=null){  //name 不为空说明此时应该改cookie
-                    $cookies.defaultCourse=name;
-                    return name;
+                            //取得root category 分类下面的 元素（卡片或者分类）
+                            $http.get(portName + "/services/cardData/" + rootSurface.rootcategory).
+                                success(function (msg) {
+                                    console.log("card: " + msg);
+                                    result.childResCards = msg;
+
+                                    callback(result);//返回数据的回调
+                                }).
+                                error(function (err) {
+                                    alert('error:  get card data' + err);
+                                });
+                        }).
+                        error(function (err) {
+                            alert('error: get user data' + err);
+                        });
+                },
+                getUserData:function(callback){
+                    //取得所有课件信息
+                    $http.get(portName+"/services/courseData/"+$cookies.user).
+                        success(function(msg) {
+                            callback(msg);
+                        }).
+                        error(function(err) {
+                            alert('error: get user data' + err);
+                        });
                 }
-                //取cookie
-                var result = $cookies.defaultCourse;
-                console.log(result);
-                if(result==null){   //说明是第一次取
-                    $cookies.defaultCourse='u1'; //此处因该从数据库中查出默认的课件名
-                    result = 'u1';
-                }
-                return result;
             }
-        }
-    }])
-    .factory('saveOneFile',['$resource',
-    function($resource){
-        return $resource('')
-    }])
-    //获取资源列表 （id）
-    .factory('synManifest',['$resource',
-        function ($resource) {
-            return $resource('http://115.28.35.182/services/data/app/manifest/:user', {}, {
-                query: {
-                    method: 'GET',
-                    params: {user: 'public'},
-                    isArray: false}
-            });
         }])
-    //获取资源 （mp3 image）
-    .factory('synFile', ['$resource',
-        function ($resource) {
-            return $resource('http://115.28.35.182/services/data/app/file/:id', {}, {
-                query: {
-                    method: 'GET',
-                    params: {id: '@id'},
-                    isArray: false}
-            });
-        }
-    ])
-    //获取建数据库的sql语句
-    .factory('synSQL', ['$resource',
-        function ($resource) {
-            return $resource('http://115.28.35.182/services/data/app/sql/:user', {}, {
-                query: {
-                    method: 'GET',
-                    params: {user: 'public'},
-                    isArray: false}
-            });
-        }
-    ])
+    .factory('setData',['$http',
+        function($http){
+            return {
+                postLayout: function (data) {
+                    //提交修改的数据
+                    console.log("change layout "+ data.layoutx + data.layouty);
+                    $http.post(portName + "/services/changeLayout/",data).
+                        success(function (msg) {
+                            console.log("post change layout cuccess " + msg);
+                        }).
+                        error(function (err) {
+                            console.log("err post layout" + msg);
+                        });
+                },
+                postCourseName:function(data){
+                    $http.post(portName+"/services/changeCourseName/",data).
+                        success(function(msg) {
+                            console.log("post change layout cuccess "+msg);
+                        }).
+                        error(function(err) {
+                            console.log("post change coursename"+err);
+                        });
+                }
+            }
+        }])
 
 

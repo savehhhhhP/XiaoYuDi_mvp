@@ -27,7 +27,7 @@
     </div>
     <br>
     <div class="row">
-        <div class="col-sm-6 col-md-{{classLine}}" ng-repeat="childResCard in childResCards track by $index" draggable>
+        <div class="col-sm-6 col-md-{{classLine}} {{childResCard.type}}" ng-repeat="childResCard in childResCards track by $index" ng-click="gotoCategory(childResCard)">
             <div class="thumbnail">
                 <img ng-src="http://115.28.35.182/services/data/app/file/{{childResCard.image}}" ng-alt="{{childResCard.name}}" >
                 <div class="caption">
