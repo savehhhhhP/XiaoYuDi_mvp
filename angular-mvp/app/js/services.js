@@ -71,6 +71,17 @@ angular.module('myApp.services', ['ngResource','ngCookies'])
                             callback(err,null);
                             alert('error: get user data' + err);
                         });
+                },
+                getResLib:function(userId,callback){
+                    //根据用户的id 查询对应的素材库内容
+                    $http.get(portName+"/services/categoryLib/"+userId).
+                        success(function(msg) {
+                            callback(null,msg);
+                        }).
+                        error(function(err) {
+                            callback(err,null);
+                            alert('error: get categoryLib data' + err);
+                        });
                 }
             }
         }])

@@ -200,7 +200,7 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
                     name    :   "返回"
                 });
                 $scope.cards = cards;
-            })
+            });
             //点击事件
             $scope.click = function(card){
                 if(card.type == "return"){
@@ -211,7 +211,7 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
                     //点击了卡片
 
                 }
-            }
+            };
         }])
 /**
  * Controller
@@ -235,31 +235,44 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
  * Controller
  * 素材库
  */
-    .controller('resLibCtrl', ['$scope', '$log', 'card',
-    function ($scope, $log, card) {
+    .controller('resLibCtrl', ['$scope','getData','$cookies','$location',
+    function ($scope,getData,$cookies,$location) {
         removeClass();
         document.title = "素材库";
         //取得用户所有资源
-        card.query(function (response) {
-            var Res = [];
-            Res.push(    //第一个为未分类
-                {
-                    "id": "cat0",
-                    "type": "category",
-                    "name": "未分类",
-                    "image": null,
-                    "audio": null,
-                    "user": null
-                }
-            );
-            Res.concat(response.filter(function (iteRes) {
-                if (iteRes.type == "category" && iteRes.name != "root_category") {             //迭代出为非跟目录的项
-                    return true;
-                }
-            }));
-            $scope.categorys = Res;
+        getData.getResLib($cookies.user,function(err,cates){
+            if(err){
+                alert(err);
+                return;
+            }
+            console.log(cates);
+            $scope.categorys = cates;
         });
+        $scope.click = function(category){
+            $location.path("/reslibcate/"+category.id+"/"+category.name);
+        };
     }])
+/**
+ * Controller
+ * 素材库 分类页
+ */
+    .controller('resLibCateCtrl', ['$scope','getData','$cookies','$routeParams',
+        function ($scope,getData,$cookies,$routeParams) {
+            removeClass();
+            document.title = "素材库分类页";
+            $scope.categoryName = $routeParams.categoryName;
+            //取得点击的分类下所有卡片
+            ///reslibcate/:categroyId/:categoryName
+            getData.getCategoryCards($routeParams.categroyId,function(err,cards){
+                if(err){
+                    alert("get cards err");
+                    return;
+                }
+                $scope.cards = cards;
+            })
+            $scope.click = function(category){
+            };
+        }])
 /**
  * Controller
  * 某个分类                     （孩子）

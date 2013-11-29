@@ -2,14 +2,14 @@
     <br>
     <div class="header row">
         <div align="left" class="col-sm-4 col-md-4">
-            <a href="#courseware" class="btn btn-lg btn-mvp">
+            <a href="#reslib" class="btn btn-lg btn-mvp">
                 <span class="glyphicon glyphicon-arrow-left"></span>
             </a>
         </div>
 
         <div class="col-sm-4 col-md-4">
             <button data-toggle="modal" class="btn-lg btn-mvp">
-                素材库
+                {{categoryName}}
             </button>
         </div>
 
@@ -23,11 +23,11 @@
 
     <br>
     <div class="row">
-        <div class="col-sm-6 col-md-4" ng-repeat="category in categorys track by $index" style="cursor:pointer" ng-click="click(category)" >
+        <div class="col-sm-6 col-md-4" ng-repeat="card in cards track by $index" style="cursor:pointer" ng-click="click(card)" >
             <div class="thumbnail">
-                <img ng-src="img/root_category.png" ng-alt="{{category.name}}">
+                <img ng-src="http://115.28.35.182/services/data/app/file/{{card.image}}" ng-alt="{{card.name}}">
                 <div class="caption">
-                    <h3 class="text-center">{{category.name}}</h3>
+                    <h3 class="text-center">{{card.name}}</h3>
                 </div>
             </div>
         </div>

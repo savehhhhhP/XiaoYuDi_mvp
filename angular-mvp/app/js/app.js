@@ -15,6 +15,7 @@ config(['$routeProvider', function($routeProvider) {
         $routeProvider.when('/courseware', {templateUrl: 'parents/index.html', controller: 'CourseCtrl'});
         $routeProvider.when('/newcard', {templateUrl: 'parents/newcard.html', controller: 'NewCardCtrl'});
         $routeProvider.when('/reslib', {templateUrl: 'parents/resourcelib.html', controller: 'resLibCtrl'});
+        $routeProvider.when('/reslibcate/:categroyId/:categoryName', {templateUrl: 'parents/reslibcate.html', controller: 'resLibCateCtrl'});
         $routeProvider.when('/child', {templateUrl: 'child/index.html', controller: 'childCtrl'});
         $routeProvider.when('/couselib', {templateUrl: 'parents/coursewarelib.html', controller: 'couseLibCtrl'});
         $routeProvider.when('/cateChild/:categroyId/:categoryName/:classLine', {templateUrl: 'child/categroy.html', controller: 'cateChildCtrl'});
