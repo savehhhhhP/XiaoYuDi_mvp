@@ -60,6 +60,17 @@ angular.module('myApp.services', ['ngResource','ngCookies'])
                         error(function(err) {
                             alert('error: get user data' + err);
                         });
+                },
+                getCategoryCards:function(cateId,callback){
+                    //根据分类的id 查询 card_tree 获取分类下面的所有card  id
+                    $http.get(portName+"/services/categoryCards/"+cateId).
+                        success(function(msg) {
+                            callback(null,msg);
+                        }).
+                        error(function(err) {
+                            callback(err,null);
+                            alert('error: get user data' + err);
+                        });
                 }
             }
         }])
@@ -74,7 +85,7 @@ angular.module('myApp.services', ['ngResource','ngCookies'])
                             console.log("post change layout cuccess " + msg);
                         }).
                         error(function (err) {
-                            console.log("err post layout" + msg);
+                            console.log("err post layout" + err);
                         });
                 },
                 postCourseName:function(data){

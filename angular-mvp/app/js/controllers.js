@@ -50,8 +50,6 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
         //切换课件
         $scope.changeCourse = function(rootcategory){
             $cookies.curSurface = rootcategory;//改变此时cookie
-            $scope.$broadcast("CourseCtrlChangeFromDialogCtrl", rootcategory); //广播一个消息让课件页切换课件
-            console.log(rootcategory);
         }
         $("#coursewave,#newResouse,#editAudio,#editImage").on('hide',function(e){
             e.preventDefault();
@@ -75,8 +73,8 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
  * Controller
  * 孩子页
  */
-    .controller('childCtrl', ['$scope','$cookies','getData',
-    function ($scope,$cookies,getData) {
+    .controller('childCtrl', ['$scope','$cookies','getData','$location',
+    function ($scope,$cookies,getData,$location) {
         removeClass();
         document.title = "孩子页面";
         //取得所有 课件信息
@@ -89,19 +87,23 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
             console.log(result.childResCards);
         });
 
-
         //点击图片事件
-        $scope.clickImg = function (audio) {
-            console.log("play!~~~"+audio);
-            $("#" + audio).jPlayer({
-                ready: function () {
-                    $(this).jPlayer("setMedia", {
-                        mp3: "http://115.28.35.182/services/data/app/file/" + audio
-                    }).jPlayer("play");
-                },
-                supplied: "mp3"
-                //wmode: "window"
-            }).jPlayer("play");
+        $scope.click = function (childResCard) {
+            if (childResCard.type == "card") {  //
+                console.log("play!~~~" + childResCard.audio);
+                $("#" + childResCard.audio).jPlayer({
+                    ready: function () {
+                        $(this).jPlayer("setMedia", {
+                            mp3: "http://115.28.35.182/services/data/app/file/" + childResCard.audio
+                        }).jPlayer("play");
+                    },
+                    supplied: "mp3"
+                    //wmode: "window"
+                }).jPlayer("play");
+            } else {
+                //进入目录
+                $location.path("/cateChild/"+childResCard.id+"/"+childResCard.name+"/"+$scope.classLine);
+            }
         }
     }])
 /**
@@ -109,8 +111,8 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
  * 课件编辑页                (首页)
  */
     .controller('CourseCtrl',
-              ['$scope','$http','$templateCache','$cookies','init_Data','getData','setData',
-    function ($scope,$http,$templateCache,$cookies,init_Data,getData,setData) {
+              ['$scope','$http','$templateCache','$cookies','init_Data','getData','setData','$window','$location',
+    function ($scope,$http,$templateCache,$cookies,init_Data,getData,setData,$window,$location) {
         document.title = "课件";
         var userName;
 
@@ -171,14 +173,46 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
         //点击了某个分类
         $scope.gotoCategory = function(childResCard){
             if(childResCard.type=="category"){
-                console.log("test");
+                $location.path("/cateParent/"+childResCard.id+"/"+childResCard.name+"/"+$scope.classLine);
             }
         }
-        $scope.$on("CourseCtrlChangeFromDialogCtrl",
-            function (event, msg) {
-                console.log("CourseCtrl", msg);
-            });
     }])
+/**
+ * Controller
+ * 某个分类                     （教育者）
+ */
+    .controller('cateParentCtrl', ['$scope','$routeParams','getData','$location',
+        function ($scope,$routeParams,getData,$location) {
+            $scope.categroyName = $routeParams.categoryName;
+            document.title = "分类页面";
+            $scope.classLine = $routeParams.classLine;
+
+            //根据分类的id 查询分类下面的所有card 的信息
+            getData.getCategoryCards($routeParams.categroyId,function(err,cards){
+                if(err){
+                    alert("get cards err");
+                    return;
+                }
+                //添加返回按钮
+                cards.unshift({
+                    image   :   "return",
+                    type    :   "return",
+                    name    :   "返回"
+                });
+                $scope.cards = cards;
+            })
+            //点击事件
+            $scope.click = function(card){
+                if(card.type == "return"){
+                    //返回事件
+                    $location.path("/courseware");
+                }
+                else{
+                    //点击了卡片
+
+                }
+            }
+        }])
 /**
  * Controller
  * 新建卡片
@@ -228,23 +262,46 @@ xiaoyudiControllers.controller('dialogCtrl', ['$scope', 'user','$cookies','$http
     }])
 /**
  * Controller
- * 某个分类
+ * 某个分类                     （孩子）
  */
-    .controller('categroyCtrl', ['$scope', 'card','$routeParams',
-    function ($scope,card,$routeParams) {
-        $scope.params = $routeParams;           //取得进入的分类的id
+    .controller('cateChildCtrl', ['$scope','$routeParams','getData','$location',
+    function ($scope,$routeParams,getData,$location) {
+        $scope.categroyName = $routeParams.categoryName;
         document.title = "分类页面";
-        card.query(function(response){
-            $scope.cards = response.filter(function(iteRes){
-                if(iteRes.id==$routeParams.categroyId){
-                    $scope.categroy = iteRes;
-                    return false;
-                }
-                if(iteRes.name!="root_category"){
-                    return true;
-                }
+        $scope.classLine = $routeParams.classLine;
+
+        //根据分类的id 查询分类下面的所有card 的信息
+        getData.getCategoryCards($routeParams.categroyId,function(err,cards){
+            if(err){
+                alert("get cards err");
+                return;
+            }
+            //添加返回按钮
+            cards.unshift({
+                image   :   "return",
+                type    :   "return",
+                name    :   "返回"
             });
-        });
+            $scope.cards = cards;
+        })
+        //点击事件
+        $scope.click = function(card){
+            if(card.type == "return"){
+                //返回事件
+                $location.path("/child");
+            }
+            else{
+                //点击了卡片
+                $("#" + card.audio).jPlayer({
+                    ready: function () {
+                        $(this).jPlayer("setMedia", {
+                            mp3: "http://115.28.35.182/services/data/app/file/" + card.audio
+                        }).jPlayer("play");
+                    },
+                    supplied: "mp3"
+                }).jPlayer("play");
+            }
+        }
     }]);
 
 /**
